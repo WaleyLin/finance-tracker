@@ -1,4 +1,4 @@
-# 💰 FinanceBot — Personal Finance Tracker
+# FinanceBot — Personal Finance Tracker
 
 A personal finance tracker built with vanilla HTML, CSS, and JavaScript — styled like Discord. Track income and expenses, set budgets, monitor net worth, and visualize spending trends. All data saved locally in the browser with no backend or sign-up required.
 
