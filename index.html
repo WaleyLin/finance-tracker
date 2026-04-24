@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceBot — Personal Finance Tracker</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=gg+sans:wght@400;500;600&family=Inconsolata:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR: server icons -->
+<nav class="server-rail" aria-label="Sections">
+  <div class="server-icon active" data-section="dashboard" title="Dashboard">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/></svg>
+  </div>
+  <div class="rail-divider"></div>
+  <div class="server-icon" data-section="transactions" title="Transactions">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9h14V7L21 10l-4 3v-2H3V9zm18 6H7v-2l-4 3 4 3v-2h14v-2z"/></svg>
+  </div>
+  <div class="server-icon" data-section="budgets" title="Budgets">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+  </div>
+  <div class="server-icon" data-section="analytics" title="Analytics">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+  </div>
+  <div class="rail-divider"></div>
+  <div class="server-icon add-server" id="btnAddServer" title="Settings">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+  </div>
+</nav>
+
+<!-- CHANNEL SIDEBAR -->
+<aside class="channel-sidebar" id="channelSidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title" id="sidebarTitle">💰 FinanceBot</span>
+  </div>
+
+  <!-- Dashboard channels -->
+  <div class="channel-group" data-for="dashboard">
+    <div class="channel-category">OVERVIEW</div>
+    <div class="channel-item active" data-view="overview">
+      <span class="channel-hash">#</span> overview
+    </div>
+    <div class="channel-item" data-view="networth">
+      <span class="channel-hash">#</span> net-worth
+    </div>
+  </div>
+
+  <!-- Transactions channels -->
+  <div class="channel-group hidden" data-for="transactions">
+    <div class="channel-category">MONEY MOVES</div>
+    <div class="channel-item active" data-view="all-transactions">
+      <span class="channel-hash">#</span> all-transactions
+    </div>
+    <div class="channel-item" data-view="add-transaction">
+      <span class="channel-hash">+</span> add-transaction
+    </div>
+  </div>
+
+  <!-- Budgets channels -->
+  <div class="channel-group hidden" data-for="budgets">
+    <div class="channel-category">LIMITS</div>
+    <div class="channel-item active" data-view="budget-overview">
+      <span class="channel-hash">#</span> budget-overview
+    </div>
+    <div class="channel-item" data-view="set-budget">
+      <span class="channel-hash">+</span> set-budget
+    </div>
+  </div>
+
+  <!-- Analytics channels -->
+  <div class="channel-group hidden" data-for="analytics">
+    <div class="channel-category">CHARTS</div>
+    <div class="channel-item active" data-view="spending-chart">
+      <span class="channel-hash">#</span> spending-breakdown
+    </div>
+    <div class="channel-item" data-view="trend-chart">
+      <span class="channel-hash">#</span> monthly-trend
+    </div>
+  </div>
+
+  <!-- User area -->
+  <div class="user-area">
+    <div class="user-avatar" id="userAvatar">💸</div>
+    <div class="user-info">
+      <div class="user-name" id="userName">Traveler</div>
+      <div class="user-status">● Online</div>
+    </div>
+    <div class="user-actions">
+      <button class="icon-btn" title="Edit name" onclick="editUsername()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content" id="mainContent">
+
+  <!-- ═══════════════ DASHBOARD / OVERVIEW ═══════════════ -->
+  <div class="view active" id="view-overview">
+    <div class="view-header">
+      <h1 class="view-title"># overview</h1>
+      <div class="view-subtitle">Your financial snapshot at a glance</div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card income">
+        <div class="stat-icon">💚</div>
+        <div class="stat-body">
+          <div class="stat-label">Total Income</div>
+          <div class="stat-value" id="totalIncome">$0.00</div>
+          <div class="stat-sub" id="incomeSub">this month</div>
+        </div>
+      </div>
+      <div class="stat-card expense">
+        <div class="stat-icon">❤️</div>
+        <div class="stat-body">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value" id="totalExpenses">$0.00</div>
+          <div class="stat-sub" id="expenseSub">this month</div>
+        </div>
+      </div>
+      <div class="stat-card balance">
+        <div class="stat-icon">💎</div>
+        <div class="stat-body">
+          <div class="stat-label">Balance</div>
+          <div class="stat-value" id="totalBalance">$0.00</div>
+          <div class="stat-sub">income − expenses</div>
+        </div>
+      </div>
+      <div class="stat-card savings">
+        <div class="stat-icon">🏦</div>
+        <div class="stat-body">
+          <div class="stat-label">Savings Rate</div>
+          <div class="stat-value" id="savingsRate">0%</div>
+          <div class="stat-sub">of income saved</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mini chart -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">📊 Spending by Category</span>
+      </div>
+      <div class="chart-wrap" style="max-height:280px;">
+        <canvas id="overviewDonut"></canvas>
+      </div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">🕐 Recent Activity</span>
+        <button class="btn-ghost" onclick="switchView('all-transactions','transactions')">View all</button>
+      </div>
+      <div id="recentList" class="tx-list">
+        <div class="empty-state">No transactions yet. Add one in <strong>#add-transaction</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ NET WORTH ═══════════════ -->
+  <div class="view" id="view-networth">
+    <div class="view-header">
+      <h1 class="view-title"># net-worth</h1>
+      <div class="view-subtitle">Track your assets and liabilities</div>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card income">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-body">
+          <div class="stat-label">Assets</div>
+          <div class="stat-value" id="totalAssets">$0.00</div>
+        </div>
+      </div>
+      <div class="stat-card expense">
+        <div class="stat-icon">💳</div>
+        <div class="stat-body">
+          <div class="stat-label">Liabilities</div>
+          <div class="stat-value" id="totalLiabilities">$0.00</div>
+        </div>
+      </div>
+      <div class="stat-card balance">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-body">
+          <div class="stat-label">Net Worth</div>
+          <div class="stat-value" id="netWorth">$0.00</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">💰 Assets</span>
+        <button class="btn-primary small" onclick="openAssetModal('asset')">+ Add Asset</button>
+      </div>
+      <div id="assetList" class="tx-list">
+        <div class="empty-state">No assets added yet.</div>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">💳 Liabilities</span>
+        <button class="btn-primary small" onclick="openAssetModal('liability')">+ Add Liability</button>
+      </div>
+      <div id="liabilityList" class="tx-list">
+        <div class="empty-state">No liabilities added yet.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ALL TRANSACTIONS ═══════════════ -->
+  <div class="view" id="view-all-transactions">
+    <div class="view-header">
+      <h1 class="view-title"># all-transactions</h1>
+      <div class="view-subtitle">Every money move logged</div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="txSearch" placeholder="🔍  Search transactions..." class="search-input" oninput="renderTransactions()">
+      <select id="txFilter" class="filter-select" onchange="renderTransactions()">
+        <option value="all">All Types</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <select id="txCatFilter" class="filter-select" onchange="renderTransactions()">
+        <option value="all">All Categories</option>
+      </select>
+      <button class="btn-primary" onclick="switchView('add-transaction','transactions')">+ Add</button>
+    </div>
+    <div id="txList" class="tx-list">
+      <div class="empty-state">No transactions yet.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ADD TRANSACTION ═══════════════ -->
+  <div class="view" id="view-add-transaction">
+    <div class="view-header">
+      <h1 class="view-title">+ add-transaction</h1>
+      <div class="view-subtitle">Log a new income or expense</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type</label>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="typeIncome" onclick="setType('income')">💚 Income</button>
+            <button class="toggle-btn" id="typeExpense" onclick="setType('expense')">❤️ Expense</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label for="txAmount">Amount ($)</label>
+          <input type="number" id="txAmount" placeholder="0.00" min="0" step="0.01" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="txDate">Date</label>
+          <input type="date" id="txDate" class="form-input">
+        </div>
+      </div>
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label for="txDesc">Description</label>
+          <input type="text" id="txDesc" placeholder="e.g. Grocery run" class="form-input">
+        </div>
+        <div class="form-group">
+          <label for="txCat">Category</label>
+          <select id="txCat" class="form-input">
+            <option value="Food">🍔 Food</option>
+            <option value="Transport">🚗 Transport</option>
+            <option value="Housing">🏠 Housing</option>
+            <option value="Entertainment">🎮 Entertainment</option>
+            <option value="Health">🏥 Health</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Salary">💼 Salary</option>
+            <option value="Freelance">💻 Freelance</option>
+            <option value="Investment">📈 Investment</option>
+            <option value="Other">📦 Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary large" onclick="addTransaction()">Post Transaction</button>
+        <button class="btn-ghost" onclick="clearForm()">Clear</button>
+      </div>
+      <div id="txFeedback" class="tx-feedback hidden"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ BUDGET OVERVIEW ═══════════════ -->
+  <div class="view" id="view-budget-overview">
+    <div class="view-header">
+      <h1 class="view-title"># budget-overview</h1>
+      <div class="view-subtitle">Monthly spending limits per category</div>
+    </div>
+    <div id="budgetCards" class="budget-grid">
+      <div class="empty-state">No budgets set. Go to <strong>+set-budget</strong> to create one.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SET BUDGET ═══════════════ -->
+  <div class="view" id="view-set-budget">
+    <div class="view-header">
+      <h1 class="view-title">+ set-budget</h1>
+      <div class="view-subtitle">Set a monthly spending limit for a category</div>
+    </div>
+    <div class="form-card">
+      <div class="form-row two-col">
+        <div class="form-group">
+          <label for="budgetCat">Category</label>
+          <select id="budgetCat" class="form-input">
+            <option value="Food">🍔 Food</option>
+            <option value="Transport">🚗 Transport</option>
+            <option value="Housing">🏠 Housing</option>
+            <option value="Entertainment">🎮 Entertainment</option>
+            <option value="Health">🏥 Health</option>
+            <option value="Shopping">🛍️ Shopping</option>
+            <option value="Other">📦 Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="budgetAmt">Monthly Limit ($)</label>
+          <input type="number" id="budgetAmt" placeholder="500.00" min="0" step="0.01" class="form-input">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-primary large" onclick="setBudget()">Set Budget</button>
+      </div>
+      <div id="budgetFeedback" class="tx-feedback hidden"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SPENDING CHART ═══════════════ -->
+  <div class="view" id="view-spending-chart">
+    <div class="view-header">
+      <h1 class="view-title"># spending-breakdown</h1>
+      <div class="view-subtitle">Where your money is going</div>
+    </div>
+    <div class="section-card">
+      <div class="chart-wrap" style="max-height:380px">
+        <canvas id="spendingBar"></canvas>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-card-header"><span class="section-card-title">Category Totals</span></div>
+      <div id="categoryTable" class="tx-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ MONTHLY TREND ═══════════════ -->
+  <div class="view" id="view-trend-chart">
+    <div class="view-header">
+      <h1 class="view-title"># monthly-trend</h1>
+      <div class="view-subtitle">Income vs expenses over time</div>
+    </div>
+    <div class="section-card">
+      <div class="chart-wrap" style="max-height:380px">
+        <canvas id="trendLine"></canvas>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()" id="modalBox">
+    <div class="modal-header" id="modalTitle">Add Asset</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="modalName">Name</label>
+        <input type="text" id="modalName" class="form-input" placeholder="e.g. Savings Account">
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label for="modalValue">Value ($)</label>
+        <input type="number" id="modalValue" class="form-input" placeholder="0.00" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveAsset()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
